@@ -8,8 +8,12 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       max-width: 600px; margin: 40px auto; padding: 0 20px;
-      background: #f9fbfd; color: #2c3a47; text-align: center;
+      color: #2c3a47; text-align: center;
+
+      /* Фон: мягкий градиент (без картинки — быстро и стабильно) */
+      background: linear-gradient(135deg, #f5f7fa 0%, #e6f0fa 100%);
     }
+
     h1 {
       font-size: 28px;
       color: #1a5276;
@@ -21,7 +25,7 @@
       font-size: 16px;
     }
     .input-group {
-      background: white;
+      background: rgba(255, 255, 255, 0.92);
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -56,7 +60,7 @@
       background: #219653;
     }
     .result {
-      background: white;
+      background: rgba(255, 255, 255, 0.92);
       border-radius: 10px;
       padding: 25px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -86,12 +90,44 @@
       color: #c0392b;
     }
     hr { border: 0; border-top: 1px dashed #bdc3c7; margin: 15px 0; }
+
+    /* Модальное окно с видео */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      position: relative;
+      width: 95%; max-width: 800px;
+      background: #1a1a1a;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .close-btn {
+      position: absolute; top: 16px; right: 20px;
+      font-size: 32px; color: white; cursor: pointer;
+      z-index: 10;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    video {
+      width: 100%; display: block; background: #000;
+    }
+    .modal-message {
+      padding: 16px; text-align: center;
+      color: #fff; font-size: 18px;
+      background: rgba(0,0,0,0.7);
+    }
   </style>
 </head>
 <body>
 
   <h1>⏳ Сколько активных лет осталось</h1>
-  <p class="subtitle">РВ + CB = ваша энергия для целей, проектов и жизни</p>
+  <p class="subtitle">RV + CB = ваша энергия для целей, проектов и жизни</p>
 
   <div class="input-group">
     <label>Ваш возраст (лет):</label>
@@ -107,7 +143,7 @@
   <div id="result" class="result">
     <p>До пенсии осталось: <span id="yearsLeft" class="value">—</span> лет</p>
     <hr>
-    <p><strong>Рабочее время (РВ)</strong>:<br>
+    <p><strong>Рабочее время (RV)</strong>:<br>
        <span id="rvHours" class="value">—</span> часов</p>
     
     <p><strong>Свободное время (CB)</strong>:<br>
@@ -118,13 +154,27 @@
     </ul>
 
     <div class="total">
-      🎯 <strong>Общий временной резерв (РВ + CB)</strong>:<br>
+      🎯 <strong>Общий временной резерв (RV + CB)</strong>:<br>
       <span id="totalHours" class="value highlight">—</span> часов
     </div>
 
     <p style="margin-top: 20px; font-style: italic; color: #555;">
       Это ваша энергия, возможности и время для того, чтобы реализовать всё, что вы запланировали!
     </p>
+  </div>
+
+  <!-- Модальное окно с видео -->
+  <div id="videoModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <video id="localVideo" playsinline muted>
+        <source src="motivation.mp4" type="video/mp4">
+        Ваш браузер не поддерживает видео.
+      </video>
+      <div class="modal-message">
+        ⚠️ У вас осталось менее 50 000 часов — время действовать!
+      </div>
+    </div>
   </div>
 
   <script>
@@ -142,7 +192,6 @@
       }
 
       const A = retirement - age;
-
       const RV = A * 1760;     // 220 * 8
       const C1 = A * 660;      // 220 * 3
       const C2 = A * 1740;     // 145 * 12
@@ -157,12 +206,44 @@
       document.getElementById('cbHours').textContent = CB.toLocaleString('ru');
       document.getElementById('totalHours').textContent = total.toLocaleString('ru');
 
-      // Анимация появления
+      // Анимация появления результата
       const resultDiv = document.getElementById('result');
       resultDiv.classList.remove('show');
-      void resultDiv.offsetWidth; // триггер перерисовки
+      void resultDiv.offsetWidth;
       resultDiv.classList.add('show');
+
+      // 🔔 Проверка: если < 50 000 часов — показать видео
+      if (total < 50000) {
+        showVideo();
+      } else {
+        closeModal();
+      }
     }
+
+    function showVideo() {
+      const video = document.getElementById('localVideo');
+      const modal = document.getElementById('videoModal');
+      
+      video.currentTime = 0;
+      video.play().catch(e => console.log("Автоплей заблокирован:", e));
+      
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('videoModal');
+      const video = document.getElementById('localVideo');
+      
+      modal.style.display = 'none';
+      video.pause();
+      document.body.style.overflow = '';
+    }
+
+    // Закрытие по ESC
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
   </script>
 
 </body>
