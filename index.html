@@ -6,157 +6,164 @@
   <title>Сколько активных лет осталось</title>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      max-width: 600px; margin: 0 auto; padding: 20px;
-      background-color: #f8f9fa;
-      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 600px; margin: 40px auto; padding: 0 20px;
+      background: #f9fbfd; color: #2c3a47; text-align: center;
     }
-    h1 { color: #1a5276; text-align: center; margin-bottom: 10px; }
-    .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; }
-
+    h1 {
+      font-size: 28px;
+      color: #1a5276;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #7f8c8d;
+      margin-bottom: 25px;
+      font-size: 16px;
+    }
     .input-group {
-      background: white; border-radius: 10px; padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       margin-bottom: 25px;
     }
-
-    label { font-size: 16px; display: block; margin: 12px 0 6px; font-weight: 500; }
-
-    /* Пол — кнопки */
-    .gender-group {
-      display: flex; justify-content: center; gap: 10px;
-      margin: 10px 0;
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 500;
     }
-    .gender-btn {
-      padding: 8px 20px; font-size: 16px; border: 2px solid #bdc3c7;
-      background: #ecf0f1; border-radius: 6px; cursor: pointer;
-      transition: all 0.2s;
+    input {
+      padding: 10px;
+      font-size: 18px;
+      border: 2px solid #3498db;
+      border-radius: 6px;
+      margin: 5px;
+      width: 140px;
+      text-align: center;
     }
-    .gender-btn.active {
-      background: #3498db; color: white; border-color: #2980b9;
-    }
-
-    input#age {
-      font-size: 20px; padding: 8px 12px; width: 100px; text-align: center;
-      border: 2px solid #3498db; border-radius: 6px;
-      margin-top: 5px;
-    }
-
-    button#calc {
-      display: block; margin: 20px auto 0;
-      background: #27ae60; color: white;
-      font-size: 18px; padding: 12px 30px;
-      border: none; border-radius: 6px;
+    button {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 18px;
+      border-radius: 6px;
       cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.3s;
     }
-    button#calc:hover { background: #219653; }
-
+    button:hover {
+      background: #219653;
+    }
     .result {
-      background: white; border-radius: 10px; padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       display: none;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
     }
-    .value { font-weight: bold; color: #2c3e50; font-size: 20px; }
-    .total { 
-      background: #e8f5e9; padding: 15px; margin-top: 15px;
+    .result.show {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .value {
+      font-weight: bold;
+      color: #2c3e50;
+      font-size: 20px;
+    }
+    .total {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e8f5e9;
       border-left: 4px solid #27ae60;
-      font-size: 22px;
+      font-size: 20px;
     }
-    .highlight { color: #c0392b; font-weight: bold; }
-    .note { font-style: italic; color: #555; margin-top: 15px; font-size: 15px; }
+    .highlight {
+      color: #c0392b;
+    }
+    hr { border: 0; border-top: 1px dashed #bdc3c7; margin: 15px 0; }
   </style>
 </head>
 <body>
+
   <h1>⏳ Сколько активных лет осталось</h1>
   <p class="subtitle">RV + CB = ваша энергия для целей, проектов и жизни</p>
 
   <div class="input-group">
-    <label>Выберите пол:</label>
-    <div class="gender-group">
-      <div class="gender-btn active" data-gender="male">Мужской (65 лет)</div>
-      <div class="gender-btn" data-gender="female">Женский (60 лет)</div>
-    </div>
+    <label>Ваш возраст (лет):</label>
+    <input type="number" id="age" min="18" max="100" placeholder="Например, 32">
 
-    <label for="age">Укажите ваш возраст (лет):</label>
-    <input type="number" id="age" min="18" max="70" value="32">
+    <label>Возраст выхода на пенсию:</label>
+    <input type="number" id="retirement" min="50" max="75" value="65" placeholder="Например, 65">
+
+    <br>
+    <button onclick="calculate()">Рассчитать</button>
   </div>
 
-  <button id="calc" onclick="calculate()">Рассчитать</button>
-
   <div id="result" class="result">
-    <p>До пенсии осталось: <span id="yearsLeft" class="value">33</span> лет</p>
+    <p>До пенсии осталось: <span id="yearsLeft" class="value">—</span> лет</p>
     <hr>
-    <p>🕒 <strong>Рабочее время (RV)</strong>:<br>
-       <span id="rvHours" class="value">58 080</span> часов</p>
+    <p><strong>Рабочее время (RV)</strong>:<br>
+       <span id="rvHours" class="value">—</span> часов</p>
     
-    <p> свободное время (CB)</strong>:<br>
-       <span id="cbHours" class="value">79 200</span> часов</p>
-    <ul style="text-align: left; margin: 10px 0 0 20px; font-size: 16px;">
-      <li>C1 — будни (3 ч/день): <span id="c1Hours">21 780</span> ч</li>
-      <li>C2 — выходные (12 ч/день): <span id="c2Hours">57 420</span> ч</li>
+    <p><strong>Свободное время (CB)</strong>:<br>
+       <span id="cbHours" class="value">—</span> часов</p>
+    <ul style="text-align: left; margin: 10px 0 0 25px; font-size: 15px;">
+      <li>C1 — будни (3 ч/день): <span id="c1Hours">—</span> ч</li>
+      <li>C2 — выходные (12 ч/день): <span id="c2Hours">—</span> ч</li>
     </ul>
 
     <div class="total">
       🎯 <strong>Общий временной резерв (RV + CB)</strong>:<br>
-      <span id="totalHours" class="value highlight">137 280</span> часов
-      <br><small>≈ <span id="totalYears">15.7</span> лет вашей жизни</small>
+      <span id="totalHours" class="value highlight">—</span> часов
     </div>
 
-    <p class="note">
+    <p style="margin-top: 20px; font-style: italic; color: #555;">
       Это ваша энергия, возможности и время для того, чтобы реализовать всё, что вы запланировали!
     </p>
   </div>
 
   <script>
-    let selectedGender = 'male';
-
-    // Обработка выбора пола
-    document.querySelectorAll('.gender-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        selectedGender = this.dataset.gender;
-        calculate(); // мгновенный пересчёт
-      });
-    });
-
-    function getRetirementAge(gender) {
-      return gender === 'male' ? 65 : 60;
-    }
-
     function calculate() {
       const age = Number(document.getElementById('age').value);
-      const retirementAge = getRetirementAge(selectedGender);
+      const retirement = Number(document.getElementById('retirement').value);
 
-      if (age < 0 || age > retirementAge + 5 || isNaN(age)) {
-        alert('Введите корректный возраст (до пенсии + 5 лет)');
+      if (isNaN(age) || isNaN(retirement)) {
+        alert('Пожалуйста, введите оба значения');
+        return;
+      }
+      if (age < 0 || retirement < age) {
+        alert('Возраст выхода на пенсию должен быть ≥ текущего возраста');
         return;
       }
 
-      const A = Math.max(0, retirementAge - age); // не меньше 0
+      const A = retirement - age;
 
-      // Формулы — без изменений
-      const RV = A * 1760;     // 220 раб. дней × 8 ч
-      const C1 = A * 660;      // 220 × 3 ч
-      const C2 = A * 1740;     // 145 вых. дней × 12 ч
+      const RV = A * 1760;     // 220 * 8
+      const C1 = A * 660;      // 220 * 3
+      const C2 = A * 1740;     // 145 * 12
       const CB = C1 + C2;
       const total = RV + CB;
-      const totalInYears = total / (24 * 365.25);
 
-      // Обновляем интерфейс
+      // Обновляем значения
       document.getElementById('yearsLeft').textContent = A;
       document.getElementById('rvHours').textContent = RV.toLocaleString('ru');
       document.getElementById('c1Hours').textContent = C1.toLocaleString('ru');
       document.getElementById('c2Hours').textContent = C2.toLocaleString('ru');
       document.getElementById('cbHours').textContent = CB.toLocaleString('ru');
       document.getElementById('totalHours').textContent = total.toLocaleString('ru');
-      document.getElementById('totalYears').textContent = totalInYears.toFixed(1);
 
-      document.getElementById('result').style.display = 'block';
+      // Анимация появления
+      const resultDiv = document.getElementById('result');
+      resultDiv.classList.remove('show');
+      void resultDiv.offsetWidth; // триггер перерисовки
+      resultDiv.classList.add('show');
     }
-
-    // Первый расчёт при загрузке
-    calculate();
   </script>
+
 </body>
 </html>
