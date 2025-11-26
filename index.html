@@ -9,11 +9,8 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       max-width: 600px; margin: 40px auto; padding: 0 20px;
       color: #2c3a47; text-align: center;
-
-      /* Фон: мягкий градиент (без картинки — быстро и стабильно) */
-      background: linear-gradient(135deg, #f5f7fa 0%, #e6f0fa 100%);
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9f2fc 100%);
     }
-
     h1 {
       font-size: 28px;
       color: #1a5276;
@@ -25,7 +22,7 @@
       font-size: 16px;
     }
     .input-group {
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.94);
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -46,7 +43,7 @@
       text-align: center;
     }
     button {
-      background: #27ae60;
+      background: #2980b9;
       color: white;
       border: none;
       padding: 12px 30px;
@@ -57,10 +54,10 @@
       transition: background 0.3s;
     }
     button:hover {
-      background: #219653;
+      background: #1a5276;
     }
     .result {
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.94);
       border-radius: 10px;
       padding: 25px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -82,8 +79,8 @@
     .total {
       margin-top: 20px;
       padding: 15px;
-      background: #e8f5e9;
-      border-left: 4px solid #27ae60;
+      background: #e3f2fd;
+      border-left: 4px solid #3498db;
       font-size: 20px;
     }
     .highlight {
@@ -91,12 +88,12 @@
     }
     hr { border: 0; border-top: 1px dashed #bdc3c7; margin: 15px 0; }
 
-    /* Модальное окно с видео */
+    /* Модальное окно */
     .modal {
       display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.92);
       z-index: 1000;
       justify-content: center;
       align-items: center;
@@ -104,7 +101,7 @@
     .modal-content {
       position: relative;
       width: 95%; max-width: 800px;
-      background: #1a1a1a;
+      background: #000;
       border-radius: 12px;
       overflow: hidden;
     }
@@ -115,12 +112,28 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
     video {
-      width: 100%; display: block; background: #000;
+      width: 100%; display: block;
     }
     .modal-message {
       padding: 16px; text-align: center;
       color: #fff; font-size: 18px;
       background: rgba(0,0,0,0.7);
+    }
+    #unmuteBtn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 2000;
+      display: none;
+    }
+    #unmuteBtn button {
+      padding: 10px 16px;
+      font-size: 16px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -167,7 +180,7 @@
   <div id="videoModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" onclick="closeModal()">&times;</span>
-      <video id="localVideo" playsinline muted>
+      <video id="localVideo" playsinline>
         <source src="motivation.mp4" type="video/mp4">
         Ваш браузер не поддерживает видео.
       </video>
@@ -175,6 +188,11 @@
         ⚠️ У вас осталось менее 50 000 часов — время действовать!
       </div>
     </div>
+  </div>
+
+  <!-- Кнопка включения звука (если автоплей заблокирован) -->
+  <div id="unmuteBtn">
+    <button onclick="unmuteVideo()">🔊 Включить звук</button>
   </div>
 
   <script>
@@ -198,7 +216,7 @@
       const CB = C1 + C2;
       const total = RV + CB;
 
-      // Обновляем значения
+      // Обновление интерфейса
       document.getElementById('yearsLeft').textContent = A;
       document.getElementById('rvHours').textContent = RV.toLocaleString('ru');
       document.getElementById('c1Hours').textContent = C1.toLocaleString('ru');
@@ -206,13 +224,13 @@
       document.getElementById('cbHours').textContent = CB.toLocaleString('ru');
       document.getElementById('totalHours').textContent = total.toLocaleString('ru');
 
-      // Анимация появления результата
+      // Анимация результата
       const resultDiv = document.getElementById('result');
       resultDiv.classList.remove('show');
       void resultDiv.offsetWidth;
       resultDiv.classList.add('show');
 
-      // 🔔 Проверка: если < 50 000 часов — показать видео
+      // 🔔 Проверка на критический остаток
       if (total < 50000) {
         showVideo();
       } else {
@@ -223,10 +241,22 @@
     function showVideo() {
       const video = document.getElementById('localVideo');
       const modal = document.getElementById('videoModal');
-      
+
       video.currentTime = 0;
-      video.play().catch(e => console.log("Автоплей заблокирован:", e));
-      
+      video.muted = false;
+      video.volume = 0.8;
+
+      // Пытаемся проиграть со звуком (после user gesture — разрешено)
+      video.play()
+        .then(() => {
+          console.log("Видео запущено со звуком");
+          document.getElementById('unmuteBtn').style.display = 'none';
+        })
+        .catch(e => {
+          console.warn("Автоплей со звуком заблокирован:", e);
+          document.getElementById('unmuteBtn').style.display = 'block';
+        });
+
       modal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
     }
@@ -238,6 +268,14 @@
       modal.style.display = 'none';
       video.pause();
       document.body.style.overflow = '';
+    }
+
+    function unmuteVideo() {
+      const video = document.getElementById('localVideo');
+      video.muted = false;
+      video.volume = 0.8;
+      video.play().catch(e => console.error("Не удалось включить звук:", e));
+      document.getElementById('unmuteBtn').style.display = 'none';
     }
 
     // Закрытие по ESC
